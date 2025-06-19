@@ -5,66 +5,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Clasificador de Insectos</title>
   <style>
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #6b8cae;
+      --accent-color: #ff7e5f;
+      --light-bg: #f8fafc;
+      --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+    
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f4f8;
+      background-color: var(--light-bg);
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 30px;
+      min-height: 100vh;
+      padding: 40px 20px;
+      margin: 0;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
     }
 
     h1 {
-      color: #333;
-      margin-bottom: 20px;
+      color: var(--primary-color);
+      margin-bottom: 30px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 2.2rem;
+      position: relative;
+      padding-bottom: 15px;
     }
 
-    form {
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: var(--accent-color);
+      border-radius: 2px;
+    }
+
+    .card {
       background-color: #fff;
-      padding: 20px 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 400px;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 30px;
     }
 
     label {
       display: block;
-      margin-top: 15px;
-      font-weight: bold;
-      color: #444;
+      margin-top: 20px;
+      font-weight: 500;
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    .input-group {
+      position: relative;
+      margin-top: 8px;
     }
 
     input[type="text"] {
       width: 100%;
-      padding: 10px;
+      padding: 12px 15px;
       margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
     }
 
     input[type="submit"] {
-      margin-top: 20px;
-      padding: 10px;
+      margin-top: 30px;
+      padding: 14px;
       width: 100%;
-      background-color: #007bff;
+      background-color: var(--primary-color);
       border: none;
       color: white;
-      font-size: 16px;
-      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 10px;
       cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
     }
 
     input[type="submit"]:hover {
-      background-color: #0056b3;
+      background-color: var(--secondary-color);
+      transform: translateY(-2px);
+    }
+
+    input[type="submit"]:active {
+      transform: translateY(0);
     }
 
     #resultado {
-      margin-top: 20px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
+      margin-top: 25px;
+      padding: 20px;
+      background-color: #f0f7ff;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      color: var(--primary-color);
       text-align: center;
+      border-left: 4px solid var(--accent-color);
+      display: none;
+    }
+
+    .unit {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #777;
+      font-size: 0.9rem;
     }
   </style>
   <script>
@@ -72,6 +147,13 @@
       event.preventDefault();
       const abdomen = document.getElementById('abdomen').value;
       const antena = document.getElementById('antena').value;
+      
+      // Mostrar estado de carga
+      const resultado = document.getElementById('resultado');
+      resultado.innerText = "Analizando características del insecto...";
+      resultado.style.display = "block";
+      resultado.style.color = "#666";
+      resultado.style.backgroundColor = "#f5f5f5";
 
       fetch('/predict', {
         method: 'POST',
@@ -83,30 +165,61 @@
       .then(response => response.json())
       .then(data => {
         if (data.error) {
-          document.getElementById('resultado').innerText = 'Error: ' + data.error;
+          resultado.innerText = 'Error: ' + data.error;
+          resultado.style.color = "#d32f2f";
+          resultado.style.backgroundColor = "#ffebee";
         } else {
-          document.getElementById('resultado').innerText = 'El insecto es un/a ' + data.categoria;
+          resultado.innerText = 'Resultado: Pertenece a la categoría ' + data.categoria;
+          resultado.style.color = "#2e7d32";
+          resultado.style.backgroundColor = "#e8f5e9";
         }
       })
       .catch(error => {
-        document.getElementById('resultado').innerText = 'Error en la solicitud.';
+        resultado.innerText = 'Error al conectar con el servidor. Intente nuevamente.';
+        resultado.style.color = "#d32f2f";
+        resultado.style.backgroundColor = "#ffebee";
         console.error('Error:', error);
       });
     }
+    
+    // Mostrar el formulario con animación cuando la página carga
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelector('.card').style.opacity = '0';
+      document.querySelector('.card').style.transform = 'translateY(20px)';
+      document.querySelector('.card').style.transition = 'all 0.4s ease-out';
+      
+      setTimeout(() => {
+        document.querySelector('.card').style.opacity = '1';
+        document.querySelector('.card').style.transform = 'translateY(0)';
+      }, 100);
+    });
   </script>
 </head>
 <body>
-  <h1>Clasificador de Insectos</h1>
-  <form id="formulario" onsubmit="clasificarInsecto(event)">
-    <label for="abdomen">Longitud del Abdomen:</label>
-    <input type="text" id="abdomen" name="abdomen" required>
+  <div class="container">
+    <h1>Clasificador de Insectos</h1>
+    
+    <div class="card">
+      <form id="formulario" onsubmit="clasificarInsecto(event)">
+        <label for="abdomen">Longitud del abdomen</label>
+        <div class="input-group">
+          <input type="text" id="abdomen" name="abdomen" required placeholder="Ej. 5.2">
+          <span class="unit">mm</span>
+        </div>
 
-    <label for="antena">Longitud de las Antenas:</label>
-    <input type="text" id="antena" name="antena" required>
+        <label for="antena">Longitud de las antenas</label>
+        <div class="input-group">
+          <input type="text" id="antena" name="antena" required placeholder="Ej. 3.7">
+          <span class="unit">mm</span>
+        </div>
 
-    <input type="submit" value="Enviar">
-  </form>
+        <input type="submit" value="Clasificar Insecto">
+      </form>
 
-  <p id="resultado"></p>
+      <div id="resultado"></div>
+    </div>
+    
+  
+  </div>
 </body>
 </html>
